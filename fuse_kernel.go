@@ -920,3 +920,37 @@ type pollOut struct {
 type notifyPollWakeupOut struct {
 	Kh uint64
 }
+
+// Ioctl flags
+type ioctlFlags uint32
+
+const (
+	// 32bit compat ioctl on 64bit machine
+	ioctlCompat ioctlFlags = 1 << iota
+	// not restricted to well-formed ioctls, retry allowed
+	ioctlUnrestricted
+	// retry with new iovecs
+	ioctlRetry
+	// 32bit ioctl
+	ioctl32Bit
+	// is a directory
+	ioctlDir
+	// maximum of in_iovecs + out_iovecs
+	ioctlMaxIov = 256
+)
+
+type ioctlIn struct {
+	Fh      uint64
+	Flags   uint32
+	Cmd     uint32
+	Arg     uint64
+	InSize  uint32
+	OutSize uint32
+}
+
+type ioctlOut struct {
+	Result  int32
+	Flags   uint32
+	InIovs  uint32
+	OutIovs uint32
+}
