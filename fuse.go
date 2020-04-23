@@ -1339,6 +1339,22 @@ func (c *Conn) NotifyPollWakeup(wakeup PollWakeup) error {
 	return c.sendNotify(buf)
 }
 
+// NotifyDelete sends a notification to the kernel to mark the entry for `name` in `parent` as
+// deleted if the entry nodeid is `child`.
+func (c *Conn) NotifyDelete(parent, child NodeID, name string) error {
+	buf := newBuffer(unsafe.Sizeof(notifyStoreOut{}) + uintptr(len(name)+1))
+	h := (*outHeader)(unsafe.Pointer(&buf[0]))
+	// h.Unique is 0
+	h.Error = notifyDelete
+	out := (*notifyDeleteOut)(buf.alloc(unsafe.Sizeof(notifyDeleteOut{})))
+	out.Parent = uint64(parent)
+	out.Child = uint64(child)
+	out.Namelen = uint32(len(name))
+	buf = append(buf, name...)
+	buf = append(buf, '\x00')
+	return c.sendNotify(buf)
+}
+
 // LockOwner is a file-local opaque identifier assigned by the kernel
 // to identify the owner of a particular lock.
 type LockOwner uint64
